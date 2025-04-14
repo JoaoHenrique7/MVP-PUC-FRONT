@@ -23,7 +23,7 @@ Este projeto é uma aplicação web para gerenciamento de agendamentos em uma ba
 
 - HTML5
 - CSS3
-- JavaScript (vanilla)
+- JavaScript
 
 ### Instruções de Uso
 
