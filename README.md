@@ -42,4 +42,4 @@ Este projeto é uma aplicação web para gerenciamento de agendamentos em uma ba
 ### Instalação
 
 # Clone
-git clone https://github.com/JoaoHenrique7/MVP-PUC-BACK.git
+git clone https://github.com/JoaoHenrique7/MVP-PUC-FRONT.git
