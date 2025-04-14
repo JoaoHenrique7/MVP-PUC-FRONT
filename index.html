@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Barbearia - Agendamento</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="title">
+        <h1>Barbearia - Agendamentos</h1>
+      </div>
+      <div class="banner">
+        <img src="./imgs/barbeiro.jpg" alt="Banner da barbearia" />
+      </div>
+    </header>
+
+    <nav class="navigation">
+      <button onclick="showSection('barbeiros')">Barbeiros</button>
+      <button onclick="showSection('servicos')">Serviços</button>
+      <button onclick="showSection('agendamentos')">Agendamentos</button>
+    </nav>
+
+    <section class="newItem" id="barbeiros">
+      <h2>Adicionar Barbeiro</h2>
+      <input type="text" id="nomeBarbeiro" placeholder="Nome do Barbeiro" />
+      <button onclick="adicionarBarbeiro()">Adicionar</button>
+
+      <table id="tableBarbeiros">
+        <tr>
+          <th>Nome</th>
+          <th>
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/126/126468.png"
+              width="15px"
+              height="15px"
+            />
+          </th>
+        </tr>
+      </table>
+    </section>
+
+    <section class="newItem hidden" id="servicos">
+      <h2>Adicionar Serviço</h2>
+      <input type="text" id="nomeServico" placeholder="Nome do Serviço" />
+      <input type="number" id="precoServico" placeholder="Preço (R$)" />
+      <button onclick="adicionarServico()">Adicionar</button>
+
+      <table id="tableServicos">
+        <tr>
+          <th>Serviço</th>
+          <th>Preço</th>
+          <th>
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/126/126468.png"
+              width="15px"
+              height="15px"
+            />
+          </th>
+        </tr>
+      </table>
+    </section>
+
+    <section class="newItem hidden" id="agendamentos">
+      <h2>Agendar Horário</h2>
+      <input type="text" id="clienteNome" placeholder="Nome do Cliente" />
+      <input
+        type="text"
+        id="agendamentoBarbeiro"
+        placeholder="Nome do Barbeiro"
+      />
+      <input type="text" id="agendamentoServico" placeholder="Serviço" />
+      <input type="datetime-local" id="dataHora" />
+      <button onclick="adicionarAgendamento()">Agendar</button>
+
+      <table id="tableAgendamentos">
+        <tr>
+          <th>Cliente</th>
+          <th>Barbeiro</th>
+          <th>Serviço</th>
+          <th>Data e Hora</th>
+          <th>
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/126/126468.png"
+              width="15px"
+              height="15px"
+            />
+          </th>
+        </tr>
+      </table>
+    </section>
+
+    <script src="scripts.js"></script>
+  </body>
+</html>
