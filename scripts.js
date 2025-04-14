@@ -16,6 +16,18 @@ async function carregarBarbeiros() {
   atualizarTabelaBarbeiros();
 }
 
+async function carregarServicos() {
+  try {
+    const response = await fetch(`${API_URL}/servicos`);
+    if (!response.ok) throw new Error('Falha ao buscar serviços');
+    servicos = await response.json();
+  } catch (error) {
+    console.warn('API offline, carregando serviços do localStorage.');
+    servicos = JSON.parse(localStorage.getItem('servicos')) || [];
+  }
+  atualizarTabelaServicos();
+}
+
 function showSection(sectionId) {
   document.querySelectorAll('.newItem').forEach(sec => sec.classList.add('hidden'));
   document.getElementById(sectionId).classList.remove('hidden');
@@ -184,4 +196,5 @@ function removerAgendamento(index) {
 
 window.onload = () => {
   carregarBarbeiros();
+  carregarServicos();
 };
