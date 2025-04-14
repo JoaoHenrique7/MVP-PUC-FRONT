@@ -4,44 +4,17 @@ let agendamentos = [];
 
 const API_URL = 'http://localhost:5000';
 
-function salvarLocalmente() {
-  localStorage.setItem('barbeiros', JSON.stringify(barbeiros));
-  localStorage.setItem('servicos', JSON.stringify(servicos));
-  localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
-}
-
-function carregarLocalmente() {
-  barbeiros = JSON.parse(localStorage.getItem('barbeiros')) || [];
-  servicos = JSON.parse(localStorage.getItem('servicos')) || [];
-  agendamentos = JSON.parse(localStorage.getItem('agendamentos')) || [];
-}
-
-async function carregarDados() {
+async function carregarBarbeiros() {
   try {
-    const [barbeirosRes, servicosRes, agendamentosRes] = await Promise.all([
-      fetch(`${API_URL}/barbeiros`),
-      fetch(`${API_URL}/servicos`),
-      fetch(`${API_URL}/agendamentos`)
-    ]);
-
-    if (barbeirosRes.ok && servicosRes.ok && agendamentosRes.ok) {
-      barbeiros = await barbeirosRes.json();
-      servicos = await servicosRes.json();
-      agendamentos = await agendamentosRes.json();
-    } else {
-      throw new Error('Backend indisponível');
-    }
+    const response = await fetch(`${API_URL}/barbeiros`);
+    if (!response.ok) throw new Error('Falha ao buscar barbeiros');
+    barbeiros = await response.json();
   } catch (error) {
-    console.warn('Erro ao acessar a API. Usando LocalStorage.', error);
-    carregarLocalmente();
+    console.warn('API offline, carregando barbeiros do localStorage.');
+    barbeiros = JSON.parse(localStorage.getItem('barbeiros')) || [];
   }
-
   atualizarTabelaBarbeiros();
-  atualizarTabelaServicos();
-  atualizarTabelaAgendamentos();
 }
-
-carregarDados();
 
 function showSection(sectionId) {
   document.querySelectorAll('.newItem').forEach(sec => sec.classList.add('hidden'));
@@ -49,22 +22,22 @@ function showSection(sectionId) {
 }
 
 async function adicionarBarbeiro() {
-  const nome = document.getElementById('nomeBarbeiro').value;
-  if (nome.trim() === '') return alert('Digite o nome do barbeiro.');
-
-  const novoBarbeiro = { nome };
+  const nome = document.getElementById('nomeBarbeiro').value.trim();
+  if (nome === '') return alert('Digite o nome do barbeiro.');
 
   try {
-    const res = await fetch(`${API_URL}/barbeiros`, {
+    const response = await fetch(`${API_URL}/barbeiros`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(novoBarbeiro)
+      body: JSON.stringify({ nome })
     });
-
-    if (!res.ok) throw new Error('Falha na API');
-  } catch (error) {
+    if (!response.ok) throw new Error('Falha ao adicionar barbeiro');
+    const novoBarbeiro = await response.json();
     barbeiros.push(novoBarbeiro);
-    salvarLocalmente();
+  } catch (error) {
+    console.warn('API offline, salvando barbeiro localmente.');
+    barbeiros.push({ nome });
+    localStorage.setItem('barbeiros', JSON.stringify(barbeiros));
   }
 
   atualizarTabelaBarbeiros();
@@ -79,10 +52,10 @@ function atualizarTabelaBarbeiros() {
       <th><img src="https://cdn-icons-png.flaticon.com/512/126/126468.png" width="15px" height="15px"></th>
     </tr>
   `;
-  barbeiros.forEach((b, index) => {
+  barbeiros.forEach((barbeiro, index) => {
     table.innerHTML += `
       <tr>
-        <td>${b.nome || b}</td>
+        <td>${barbeiro.nome || barbeiro}</td>
         <td><button onclick="removerBarbeiro(${index})">🗑️</button></td>
       </tr>
     `;
@@ -91,28 +64,28 @@ function atualizarTabelaBarbeiros() {
 
 function removerBarbeiro(index) {
   barbeiros.splice(index, 1);
-  salvarLocalmente();
+  localStorage.setItem('barbeiros', JSON.stringify(barbeiros));
   atualizarTabelaBarbeiros();
 }
 
 async function adicionarServico() {
-  const nome = document.getElementById('nomeServico').value;
-  const preco = document.getElementById('precoServico').value;
-  if (nome.trim() === '' || preco.trim() === '') return alert('Preencha todos os campos.');
-
-  const novoServico = { nome, preco };
+  const nome = document.getElementById('nomeServico').value.trim();
+  const preco = document.getElementById('precoServico').value.trim();
+  if (nome === '' || preco === '') return alert('Preencha todos os campos.');
 
   try {
-    const res = await fetch(`${API_URL}/servicos`, {
+    const response = await fetch(`${API_URL}/servicos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(novoServico)
+      body: JSON.stringify({ nome, preco: parseFloat(preco) })
     });
-
-    if (!res.ok) throw new Error('Falha na API');
-  } catch (error) {
+    if (!response.ok) throw new Error('Falha ao adicionar serviço');
+    const novoServico = await response.json();
     servicos.push(novoServico);
-    salvarLocalmente();
+  } catch (error) {
+    console.warn('API offline, salvando serviço localmente.');
+    servicos.push({ nome, preco });
+    localStorage.setItem('servicos', JSON.stringify(servicos));
   }
 
   atualizarTabelaServicos();
@@ -124,16 +97,16 @@ function atualizarTabelaServicos() {
   const table = document.getElementById('tableServicos');
   table.innerHTML = `
     <tr>
-      <th>Serviço</th>
+      <th>Nome</th>
       <th>Preço</th>
       <th><img src="https://cdn-icons-png.flaticon.com/512/126/126468.png" width="15px" height="15px"></th>
     </tr>
   `;
-  servicos.forEach((s, index) => {
+  servicos.forEach((servico, index) => {
     table.innerHTML += `
       <tr>
-        <td>${s.nome}</td>
-        <td>R$ ${s.preco}</td>
+        <td>${servico.nome}</td>
+        <td>R$ ${servico.preco}</td>
         <td><button onclick="removerServico(${index})">🗑️</button></td>
       </tr>
     `;
@@ -142,37 +115,41 @@ function atualizarTabelaServicos() {
 
 function removerServico(index) {
   servicos.splice(index, 1);
-  salvarLocalmente();
+  localStorage.setItem('servicos', JSON.stringify(servicos));
   atualizarTabelaServicos();
 }
 
 async function adicionarAgendamento() {
-  const cliente = document.getElementById('nomeCliente').value;
-  const barbeiro = document.getElementById('barbeiroSelect').value;
-  const servico = document.getElementById('servicoSelect').value;
-  const horario = document.getElementById('horarioAgendamento').value;
-  if (!cliente || !barbeiro || !servico || !horario) return alert('Preencha todos os campos.');
+  const cliente = document.getElementById('nomeCliente').value.trim();
+  const barbeiro = document.getElementById('barbeiroAgendamento').value.trim();
+  const servico = document.getElementById('servicoAgendamento').value.trim();
+  const dataHora = document.getElementById('dataHoraAgendamento').value.trim();
+  if (!cliente || !barbeiro || !servico || !dataHora) {
+    return alert('Preencha todos os campos.');
+  }
 
-  const novoAgendamento = { cliente, barbeiro, servico, horario };
+  const novoAgendamento = { cliente, barbeiro, servico, data_hora: dataHora };
 
   try {
-    const res = await fetch(`${API_URL}/agendamentos`, {
+    const response = await fetch(`${API_URL}/agendamentos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(novoAgendamento)
     });
-
-    if (!res.ok) throw new Error('Falha na API');
+    if (!response.ok) throw new Error('Falha ao adicionar agendamento');
+    const agendamento = await response.json();
+    agendamentos.push(agendamento);
   } catch (error) {
+    console.warn('API offline, salvando agendamento localmente.');
     agendamentos.push(novoAgendamento);
-    salvarLocalmente();
+    localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
   }
 
   atualizarTabelaAgendamentos();
   document.getElementById('nomeCliente').value = '';
-  document.getElementById('barbeiroSelect').value = '';
-  document.getElementById('servicoSelect').value = '';
-  document.getElementById('horarioAgendamento').value = '';
+  document.getElementById('barbeiroAgendamento').value = '';
+  document.getElementById('servicoAgendamento').value = '';
+  document.getElementById('dataHoraAgendamento').value = '';
 }
 
 function atualizarTabelaAgendamentos() {
@@ -182,17 +159,17 @@ function atualizarTabelaAgendamentos() {
       <th>Cliente</th>
       <th>Barbeiro</th>
       <th>Serviço</th>
-      <th>Horário</th>
+      <th>Data e Hora</th>
       <th><img src="https://cdn-icons-png.flaticon.com/512/126/126468.png" width="15px" height="15px"></th>
     </tr>
   `;
-  agendamentos.forEach((a, index) => {
+  agendamentos.forEach((agendamento, index) => {
     table.innerHTML += `
       <tr>
-        <td>${a.cliente}</td>
-        <td>${a.barbeiro}</td>
-        <td>${a.servico}</td>
-        <td>${a.horario}</td>
+        <td>${agendamento.cliente}</td>
+        <td>${agendamento.barbeiro}</td>
+        <td>${agendamento.servico}</td>
+        <td>${agendamento.data_hora}</td>
         <td><button onclick="removerAgendamento(${index})">🗑️</button></td>
       </tr>
     `;
@@ -201,6 +178,10 @@ function atualizarTabelaAgendamentos() {
 
 function removerAgendamento(index) {
   agendamentos.splice(index, 1);
-  salvarLocalmente();
+  localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
   atualizarTabelaAgendamentos();
 }
+
+window.onload = () => {
+  carregarBarbeiros();
+};
